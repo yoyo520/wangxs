@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title></title>
+	</head>
+<style>
+	p,ul{margin: 0;padding: 0;}
+	.div{
+		width: 50%;
+		height: 640px;
+		margin:0 auto;
+		border: 1px solid #f1f1f1;
+	}
+	.div h1{
+		width: 100%;
+		height: 50px;
+		background: #f1f1f1;
+		line-height: 50px;
+		font-size: 23px;
+		text-indent: 1.5em;
+	}
+	.div h1 select{
+		float: right;
+		margin-top: 17px;
+	}
+	.div h1>span{
+		font-size: 13px;
+		color: #3a3939;
+	}
+	.div .body p{
+		width: 50%;
+	    float: left;
+	    margin: 10px 0 10px 0;
+	    text-indent: 2em;
+	}
+	.div p:last-child{
+		width: 100%;
+        float: left;
+	}
+	.body{
+		overflow:hidden;
+	}
+	.forword h2{
+		width: 100%;
+		height: 50px;
+		background: #f1f1f1;
+		line-height: 50px;
+		font-size: 23px;
+		text-indent: 1.5em;
+	}
+	.forword p{
+		width: 100%;
+		height: 50px;
+		display: flex;
+	}
+	.forword p span{
+		flex: 1;
+		text-align: center;
+		line-height: 50px;
+		border:1px solid #dddddd;
+	}
+	.forword h2{
+		width: 100%;
+		height: 50px;
+	}
+	.forword li{
+		width: 100%;
+		height: 50px;
+		display: flex;
+	}
+	.forword li span{
+		flex: 1;
+		text-align: center;
+		line-height: 50px;
+		border:1px solid #dddddd;
+	}
+	#canvas{
+		overflow: hidden;
+		border: 1px solid #f1f1f1;
+		margin: 0 auto;
+		text-align: center;
+		background: #2f4b7a;
+	}
+	.canvas_div{
+		width: 74%;
+		margin: 0 auto;
+		position: relative;
+	}
+	.simple_temp {
+   display: flex;
+    width: 86%;
+    height: 50px;
+    position: absolute;
+    left: 7.5%;
+    top: 7px;
+    color: white;
+}
+	.simple_temp span{
+		width: 20%;
+		display: block;
+		text-align: center;
+	}
+</style>
+	<body>
+			<div class="div">
+				<h1>最新天气实况<span>日期:<span></span></span><select id="select_city"><option>南京</option><option>蚌埠</option><option>南通</option><option>海口</option></select></h1>
+				<div class="body">
+					<p>城市：<span></span></p>
+					<p>天气：<span></span></p>
+					<p>当前气温：<span></span></p>
+					<p>风向：<span></span></p>
+					<p>最高气温：<span></span></p>
+					<p>最低气温：<span></span></p>
+					<p>温馨提醒：<span></span></p>
+				</div>
+				<div class="forword">
+					<h2>未来五天天气预报</h2>
+					<p><span>日期</span><span>天气</span><span>最高气温</span><span>风力</span><span>最低气温</span><span>风向</span></p>
+					<ul>
+						<!--<li><span>16日</span><span>20℃</span><span>3-4级</span><span>20℃</span><span>东南</span></li>-->
+					</ul>
+				</div>
+				<div class="canvas_div"><canvas id="canvas"></canvas>
+					<div class="simple_temp">
+						<!--<span>周一<br/>20℃</span><span>周二<br/>20℃</span><span>周三<br/>20℃</span><span>周四<br/>20℃</span><span>周五<br/>20℃</span>-->
+					</div>
+				</div>
+			</div>
+		<script src="./jquery.min.js"></script>
+		<script>
+			$(function(){
+				$("#select_city").change(function(){
+                	switch ($(this).val()){
+                		case "南京":
+                	     citykey_val="101190101";
+                	     break;
+                	    case "蚌埠":
+                	     citykey_val="101220201";
+                	     break; 
+                	     case "南通":
+                	       citykey_val="101190501";
+                	     break; 
+                	     case "海口":
+                	       citykey_val="101310101";
+                	     break;
+                	};
+                	$.ajax({
+						url: 'http://wthrcdn.etouch.cn/weather_mini',
+						type: 'get',
+						data: {
+							citykey:citykey_val
+						},
+				dataType: 'json',
+				success: function (resp) {
+					console.log(resp);
+					var date_data=resp.data.forecast[0].date;
+					var data_len=date_data.substr(0,3);
+					var data_len_day=date_data.substr(3,3);
+					console.log(data_len_day);
+					var date1=new Date();
+					var dateMon=date1.getMonth()+1;
+					var dateDay=date1.getDay();
+					$(".div h1 span span").html(dateMon+'月'+data_len+" "+data_len_day);
+					$('.body p:first-child span').html(resp.data.city);
+					$('.body p:nth-child(2) span').html(resp.data.forecast[0].type);
+					$('.body p:nth-child(3) span').html(resp.data.wendu+"℃");
+					$('.body p:nth-child(4) span').html(resp.data.forecast[0].fengxiang);
+				    $('.body p:nth-child(5) span').html(resp.data.forecast[0].high);
+					$('.body p:nth-child(6) span').html(resp.data.forecast[0].low);
+					$('.body p:nth-child(7) span').html(resp.data.ganmao);
+					$('.forword ul,.simple_temp').empty();
+					for(var i=0;i<resp.data.forecast.length;i++){
+					var str = resp.data.forecast[i].fengli;
+					var str_fengli=str.substring(9, str.length - 3)
+						var forword_day="<li><span>"+dateMon+'月'+resp.data.forecast[i].date+"</span><span>"+resp.data.forecast[i].type+"</span><span>"+resp.data.forecast[i].high+"</span><span>"+str_fengli+"</span><span>"+resp.data.forecast[i].low+"</span><span>"+resp.data.forecast[i].fengxiang+"</span></li>";
+						$('.forword ul').append(forword_day);
+					$(".simple_temp").append("<span>"+dateMon+'月'+data_len+"<br/>"+resp.data.forecast[i].date.substring(3,resp.data.forecast[i].date.length)+"</span>")
+					};
+					
+					//温度走势图start
+				var canvas=document.getElementById("canvas");
+				var context=canvas.getContext("2d");
+				canvas.width=700;
+				canvas.height=330;
+				context.translate(50,300);
+				var item_width = 120;
+				var line_arr=[50.5,150.5,250.5,350.5,450.5,550.5];
+				var tem_pexi=(270/40);//计算每像素的温度，单位：px/℃，tem_pexi*high_tep_arr=最高温度所占距底部的像素；最低温度同理
+				var high_tep_arr=[];
+				for(x=0;x<resp.data.forecast.length;x++){
+					var high_tep=(resp.data.forecast[x].high).substring(3,resp.data.forecast[x].high.length-1);
+					high_tep_arr.push(high_tep);
+					console.log(high_tep);
+				}
+				var low_tep_arr=[];
+				for(x=0;x<resp.data.forecast.length;x++){
+					var low_tep=(resp.data.forecast[x].low).substring(3,resp.data.forecast[x].low.length-1);
+					low_tep_arr.push(low_tep);
+					console.log(low_tep);
+				}
+				console.log(low_tep_arr);
+				for(var i=0;i<6;i++){
+				context.beginPath();
+				context.moveTo(0.5 + i * item_width, -0.5);
+				context.lineTo(0.5 + i * item_width, -270.5);
+				context.strokeStyle="#f1f1f1";
+				context.lineWidth=1;
+				context.stroke();
+				context.closePath();
+				}
+				//折线走势
+				var new_high_x=[];
+				var new_high_y=[];
+				var high_color_line='white';
+				var high_color_circle="white";
+				function draw_line(a){
+					for(var j=0;j<a.length;j++){//a温度数组
+						//画点
+					context.beginPath();
+					var high_y=parseInt(Number(a[j])*tem_pexi);
+					var high_x=55.5 + j * item_width;
+		           context.arc(high_x,-high_y,3,0,2*Math.PI,true);
+		           context.strokeStyle="white";
+		           context.stroke();
+		           context.fillStyle=high_color_circle;
+		           	context.fill();
+                   context.closePath();
+                   //画线
+                   new_high_x.push(high_x);
+                   new_high_y.push(-high_y);
+                  for(var z=0;z<10;z++){
+                  	if(z == 4){
+                  		continue;
+                  	}
+                  	context.beginPath();
+                   context.moveTo(new_high_x[z],new_high_y[z]);
+                   context.lineTo(new_high_x[z+1],new_high_y[z+1]);
+                   context.strokeStyle=high_color_line;
+					context.lineWidth=1;
+					context.stroke();
+					context.closePath();
+
+                  }
+                  	//写文字
+                  	if(a==high_tep_arr){
+                  	context.beginPath();
+                    context.font = "italic 15px 黑体";  
+		            context.fillStyle = high_color_line;
+		            context.fillText(a[j]+"℃",high_x,-high_y-10,50);  
+					context.stroke();
+					context.closePath();
+                  	}else{
+                  	context.beginPath();
+                    context.font = "italic 15px 黑体";  
+		            context.fillStyle = high_color_line;
+		            context.fillText(a[j]+"℃",high_x,-high_y+20,50);  
+					context.stroke();
+					context.closePath();
+                  	}
+				}
+				}
+				draw_line(high_tep_arr);
+				draw_line(low_tep_arr);
+					//温度走势图end
+				}
+	        })
+           })
+                $('#select_city').change();
+			})
+			</script>
+	</body>
+</html>
